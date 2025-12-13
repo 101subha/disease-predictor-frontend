@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Disease Prediction System</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      padding: 30px;
+    }
+    h2 {
+      text-align: center;
+    }
+    .container {
+      max-width: 800px;
+      background: white;
+      padding: 20px;
+      margin: auto;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .symptoms {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    pre {
+      background: #eee;
+      padding: 10px;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+
+<body>
+
+<h2>AI-Based Disease Prediction</h2>
+
+<div class="container">
+
+  <h3>Select Symptoms</h3>
+
+  <div class="symptoms">
+    <!-- THESE SYMPTOMS MUST MATCH DATASET EXACTLY -->
+    <label><input type="checkbox" value="itching"> itching</label>
+    <label><input type="checkbox" value="skin_rash"> skin_rash</label>
+    <label><input type="checkbox" value="nodal_skin_eruptions"> nodal_skin_eruptions</label>
+    <label><input type="checkbox" value="continuous_sneezing"> continuous_sneezing</label>
+    <label><input type="checkbox" value="shivering"> shivering</label>
+    <label><input type="checkbox" value="chills"> chills</label>
+    <label><input type="checkbox" value="joint_pain"> joint_pain</label>
+    <label><input type="checkbox" value="vomiting"> vomiting</label>
+    <label><input type="checkbox" value="fatigue"> fatigue</label>
+    <label><input type="checkbox" value="high_fever"> high_fever</label>
+    <label><input type="checkbox" value="headache"> headache</label>
+    <label><input type="checkbox" value="cough"> cough</label>
+  </div>
+
+  <button onclick="predict()">Predict Disease</button>
+
+  <h3>Result</h3>
+  <pre id="output">Waiting for input...</pre>
+
+</div>
+
+<script>
+async function predict() {
+  const checked = document.querySelectorAll('input[type=checkbox]:checked');
+  const symptoms = Array.from(checked).map(cb => cb.value);
+
+  if (symptoms.length === 0) {
+    alert("Please select at least one symptom");
+    return;
+  }
+
+  const payload = { symptoms: symptoms };
+
+  try {
+    const response = await fetch(
+      "https://diseasedetector-sunita.onrender.com/predict",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      }
+    );
+
+    const data = await response.json();
+    document.getElementById("output").textContent =
+      JSON.stringify(data, null, 2);
+
+  } catch (error) {
+    document.getElementById("output").textContent =
+      "Error connecting to API";
+  }
+}
+</script>
+
+</body>
+</html>
