@@ -214,6 +214,8 @@ async function predict() {
   const checked = document.querySelectorAll("input[type=checkbox]:checked");
   const symptoms = Array.from(checked).map(cb => cb.value);
 
+  console.log("Selected Symptoms:", symptoms); // ✅ ADD THIS LINE
+
   if (symptoms.length === 0) {
     alert("Please select at least one symptom");
     return;
@@ -224,15 +226,16 @@ async function predict() {
 
   try {
     const response = await fetch(
-      https://disease-detector-qv6n.onrender.com,
-      {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ symptoms })
-      }
-    );
+  "https://disease-detector-qv6n.onrender.com/predict",
+  {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ symptoms })
+  }
+);
 
-    const data = await response.json();
+const data = await response.json();
+console.log("API Response:", data); // ✅ HERE
 
     if (!data.predictions) {
       resultsDiv.innerHTML = "No result returned.";
