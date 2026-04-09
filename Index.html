@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AI-Based Disease Prediction</title>
+
+<!-- Tom Select -->
+<link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
+
+<style>
+body {
+  margin: 0;
+  font-family: "Segoe UI", Arial;
+  background: #f4f6fb;
+}
+
+.header {
+  background: linear-gradient(135deg, #28c6ff, #5f6cff);
+  padding: 30px;
+  text-align: center;
+  color: white;
+}
+
+.container {
+  max-width: 900px;
+  margin: -40px auto 40px;
+  padding: 20px;
+}
+
+.card {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+button {
+  width: 100%;
+  padding: 14px;
+  margin-top: 15px;
+  background: linear-gradient(135deg, #5f6cff, #7f53ff);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.bar {
+  background: #eee;
+  height: 8px;
+  border-radius: 5px;
+}
+
+.bar-fill {
+  height: 8px;
+  background: linear-gradient(135deg, #5f6cff, #7f53ff);
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <h1>🩺 AI-Based Disease Prediction</h1>
+  <p>Smart Healthcare using Machine Learning</p>
+</div>
+
+<div class="container">
+
+  <div class="card">
+    <h3>🧾 Select Symptoms</h3>
+
+    <select id="symptomSelect" multiple placeholder="Type symptoms..."></select>
+
+    <button onclick="predict()">🔍 Predict Disease</button>
+  </div>
+
+  <div class="card">
+    <h3>📊 Prediction Result</h3>
+    <div id="results">No prediction yet.</div>
+  </div>
+
+</div>
+
+<script>
+
+// ✅ Sample symptoms (expand later)
+const allSymptoms = [
+  "itching","skin_rash","nodal_skin_eruptions",
+  "continuous_sneezing","shivering","chills",
+  "joint_pain","vomiting","fatigue",
+  "high_fever","headache","cough"
+];
+
+// ✅ Initialize TomSelect
+new TomSelect("#symptomSelect", {
+  plugins: ['remove_button'],
+  maxItems: null,
+  options: allSymptoms.map(s => ({
+    value: s,
+    text: s.replaceAll("_"," ")
+  }))
+});
+
+// ✅ Prediction function (FIXED)
+async function predict() {
+
+  // 🔥 FIXED LINE (IMPORTANT)
+  const symptoms = document.getElementById("symptomSelect").tomselect.getValue();
+
+  if (!symptoms || symptoms.length === 0) {
+    alert("Please select at least one symptom");
+    return;
+  }
+
+  const resultsDiv = document.getElementById("results");
+  resultsDiv.innerHTML = "Predicting...";
+
+  try {
+    const response = await fetch("https://disease-detector-qv6n.onrender.com/predict", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({ symptoms })
+    });
+
+    const data = await response.json();
+
+    if (!data.predictions) {
+      resultsDiv.innerHTML = "No result returned.";
+      return;
+    }
+
+    resultsDiv.innerHTML = "";
+
+    data.predictions.forEach((item, index) => {
+      const percent = (item.probability * 100).toFixed(2);
+
+      resultsDiv.innerHTML += `
+        <div style="margin-bottom:15px;">
+          <strong>${item.disease}</strong>
+          ${index === 0 ? "(Top Match)" : ""}
+          <div>${percent}%</div>
+          <div class="bar">
+            <div class="bar-fill" style="width:${percent}%"></div>
+          </div>
+        </div>
+      `;
+    });
+
+  } catch (err) {
+    resultsDiv.innerHTML = "Error connecting to API";
+  }
+}
+</script>
+
+</body>
+</html>
