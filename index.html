@@ -50,6 +50,17 @@ button {
 button:hover {
   opacity: 0.95;
 }
+
+.map-btn {
+  margin-top: 10px;
+  padding: 8px 12px;
+  font-size: 13px;
+  border: none;
+  border-radius: 6px;
+  background: #28c76f;
+  color: white;
+  cursor: pointer;
+}
 </style>
 </head>
 
@@ -116,6 +127,7 @@ const allSymptoms = [
 "yellowing_of_eyes","yellowish_skin"
 ];
 
+
 // ✅ Initialize dropdown
 const tom = new TomSelect("#symptomSelect", {
   plugins: ['remove_button'],
@@ -125,6 +137,12 @@ const tom = new TomSelect("#symptomSelect", {
     text: s.replaceAll("_"," ")
   }))
 });
+
+// ✅ Google Maps function
+function openMap(query) {
+  const url = `https://www.google.com/maps/search/${encodeURIComponent(query + " near me")}`;
+  window.open(url, "_blank");
+}
 
 // ✅ Prediction function
 async function predict() {
@@ -160,15 +178,13 @@ async function predict() {
 
     resultsDiv.innerHTML = "";
 
-    // 🎨 Color logic
     function getColor(prob) {
       if (prob > 0.7) return "#28c76f";
       if (prob > 0.4) return "#ff9f43";
       return "#ea5455";
     }
 
-    // ⚠️ Low confidence warning
-    if (data.predictions[0].probability < 0.4) {
+    if (data.predictions.length > 0 && data.predictions[0].probability < 0.4) {
       resultsDiv.innerHTML += `
         <div style="color:#ea5455; margin-bottom:15px;">
           ⚠️ Low confidence prediction. Please select more symptoms.
@@ -176,7 +192,6 @@ async function predict() {
       `;
     }
 
-    // 🔥 Results UI (UPDATED)
     data.predictions.forEach((item, index) => {
 
       const percent = (item.probability * 100).toFixed(2);
@@ -201,35 +216,43 @@ async function predict() {
             </span>
           </div>
 
-          <!-- 📊 Progress Bar -->
           <div style="margin-top:8px; background:#eee; height:10px; border-radius:5px;">
             <div style="
               height:10px;
               width:${percent}%;
               background:${color};
               border-radius:5px;
-              transition:width 0.5s;
             "></div>
           </div>
 
-          <!-- 📖 Description -->
-          <p style="margin-top:10px; font-size:14px; color:#444;">
+          <p style="margin-top:10px; font-size:14px;">
             ${item.description || "No description available."}
           </p>
 
-          <!-- 💊 Precautions -->
           <div style="margin-top:8px;">
-            <strong style="font-size:14px;">Precautions:</strong>
-            <ul style="margin-top:5px; padding-left:18px; font-size:13px; color:#555;">
+            <strong>Precautions:</strong>
+            <ul>
               ${(item.precautions || ["Consult a doctor"]).map(p => `<li>${p}</li>`).join("")}
             </ul>
           </div>
+
+          <div style="margin-top:10px;">
+            👨‍⚕️ <strong>Doctor:</strong> ${item.doctor || "General Physician"}
+          </div>
+
+          <!-- 📍 Buttons -->
+          <button class="map-btn" onclick="openMap('${item.doctor}')">
+            📍 Find Nearby Doctor
+          </button>
+
+          <button class="map-btn" onclick="openMap('hospital')">
+            🏥 Find Nearby Hospital
+          </button>
 
         </div>
       `;
     });
 
-    // 💡 Tip
     resultsDiv.innerHTML += `
       <div style="margin-top:10px; font-size:13px; color:#666;">
         💡 Tip: Select 4–6 symptoms for best accuracy
